@@ -1,14 +1,13 @@
 # app/api/routes/product_routes.py
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from typing import List, Optional
-from app.models.product import ProductCreate, ProductUpdate, ProductResponse
+from app.models.product import ProductCreate, ProductUpdate, ProductResponse, BulkDeleteRequest
 from app.services.product_service import *
 
 router = APIRouter()
 
-@router.post("/products", response_model=ProductResponse)
+@router.post("/products", response_model=ProductResponse, status_code=201)
 def add_product(
-    id: int = Form(...),
     name: str = Form(...),
     description: str = Form(...),
     tags: List[str] = Form(...),
@@ -20,7 +19,6 @@ def add_product(
 ):
     try:
         product = ProductCreate(
-            id=id,
             name=name,
             description=description,
             tags=tags,
@@ -29,17 +27,15 @@ def add_product(
             category=category,
             featured=featured
         )
-        print("UPLOAD DEBUG →", image.filename, image.content_type)
-
         return create_product(product, image)
 
     except RuntimeError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=500,
-            detail="Internal server error while creating product."
+            detail="Failed to create product. Please try again later."
         )
 
 @router.get("/products", response_model=List[ProductResponse])
@@ -68,8 +64,22 @@ def edit_product(
         raise HTTPException(404, "Product not found.")
     return product
 
-@router.delete("/products/{uid}")
+@router.delete("/products/{uid}", status_code=204)
 def remove_product(uid: str):
     if not delete_product(uid):
         raise HTTPException(404, "Product not found.")
-    return {"message": "Product deleted successfully."}
+
+@router.delete("/products/bulk")
+def bulk_delete(payload: BulkDeleteRequest):
+    if not payload.uids:
+        raise HTTPException(
+            status_code=400,
+            detail="uids list cannot be empty."
+        )
+
+    result = bulk_delete_products(payload.uids)
+
+    return {
+        "message": "Bulk delete completed.",
+        **result
+    }

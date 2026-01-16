@@ -1,3 +1,4 @@
+# app/models/product.py
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -9,17 +10,16 @@ class ProductBase(BaseModel):
     pricePerML: str
     volumeML: int
     category: str
-    featured: Optional[bool] = False
+    featured: bool = False
 
 class ProductCreate(BaseModel):
-    id: int
     name: str
     description: str
     tags: List[str]
     pricePerML: str
     volumeML: int
     category: str
-    featured: Optional[bool] = False
+    featured: bool = False
 
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
@@ -32,4 +32,6 @@ class ProductUpdate(BaseModel):
 
 class ProductResponse(ProductBase):
     uid: str
-    id: int
+
+class BulkDeleteRequest(BaseModel):
+    uids: List[str]
