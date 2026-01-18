@@ -4,6 +4,9 @@ class Settings(BaseSettings):
     APP_NAME: str = ""
     FRONTEND_ORIGIN: str = ""
 
+    ADMIN_PASSWORD_HASH: str = ""
+    SESSION_SECRET_KEY: str = ""
+
     FIREBASE_PROJECT_ID: str = ""
     FIREBASE_CLIENT_EMAIL: str = ""
     FIREBASE_PRIVATE_KEY: str = ""

@@ -3,8 +3,10 @@ from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from typing import List, Optional
 from app.models.product import ProductCreate, ProductUpdate, ProductResponse, BulkDeleteRequest
 from app.services.product_service import *
+from fastapi import APIRouter, Depends
+from app.core.auth_middleware import admin_required
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(admin_required)])
 
 @router.post("/products", response_model=ProductResponse, status_code=201)
 def add_product(

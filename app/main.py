@@ -3,11 +3,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.firebase import init_firebase
 from app.core.cloudinary import cloudinary
+from app.core.session import add_session_middleware
+from app.api.routes.admin_auth import router as admin_auth_router
 from app.api.routes.product_routes import router as product_router
+# from app.api.routes.dev_routes import router as dev_router
 
 app = FastAPI(title=settings.APP_NAME)
 
 # ✅ Middleware setup
+add_session_middleware(app, settings.SESSION_SECRET_KEY)
+app.include_router(admin_auth_router)
+# app.include_router(dev_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[settings.FRONTEND_ORIGIN],
