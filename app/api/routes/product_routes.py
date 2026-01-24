@@ -6,9 +6,9 @@ from app.services.product_service import *
 from fastapi import APIRouter, Depends
 from app.core.auth_middleware import admin_required
 
-router = APIRouter(dependencies=[Depends(admin_required)])
+router = APIRouter()
 
-@router.post("/products", response_model=ProductResponse, status_code=201)
+@router.post("/products", response_model=ProductResponse, status_code=201,dependencies=[Depends(admin_required)])
 def add_product(
     name: str = Form(...),
     description: str = Form(...),
@@ -55,7 +55,7 @@ def fetch_product(uid: str):
         raise HTTPException(404, "Product not found.")
     return product
 
-@router.put("/products/{uid}", response_model=ProductResponse)
+@router.put("/products/{uid}", response_model=ProductResponse,dependencies=[Depends(admin_required)])
 def edit_product(
     uid: str,
     image: Optional[UploadFile] = File(None),
@@ -66,12 +66,12 @@ def edit_product(
         raise HTTPException(404, "Product not found.")
     return product
 
-@router.delete("/products/{uid}", status_code=204)
+@router.delete("/products/{uid}", status_code=204, dependencies=[Depends(admin_required)])
 def remove_product(uid: str):
     if not delete_product(uid):
         raise HTTPException(404, "Product not found.")
 
-@router.delete("/products/bulk")
+@router.delete("/products/bulk", dependencies=[Depends(admin_required)])
 def bulk_delete(payload: BulkDeleteRequest):
     if not payload.uids:
         raise HTTPException(

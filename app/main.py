@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.firebase import init_firebase
@@ -11,9 +12,14 @@ from app.api.routes.product_routes import router as product_router
 app = FastAPI(title=settings.APP_NAME)
 
 # ✅ Middleware setup
-add_session_middleware(app, settings.SESSION_SECRET_KEY)
-app.include_router(admin_auth_router)
-# app.include_router(dev_router)
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.SESSION_SECRET_KEY,
+    same_site="lax",
+    https_only=False      
+    # same_site="none",
+    # https_only=True      
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,16 +29,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ Initialize Firebase once during startup
+# Initialize Firebase once during startup
 @app.on_event("startup")
 def on_startup():
     init_firebase()
     print("🔥 Firebase ready and connected!")
 
-# ✅ Routers
+# Routers
+app.include_router(admin_auth_router)
 app.include_router(product_router, prefix="/api", tags=["Products"])
+# app.include_router(dev_router)
 
-# ✅ Root route
+# Root route
 @app.get("/")
 def root():
     return {"message": "Al-qasira API is running 🚀"}
