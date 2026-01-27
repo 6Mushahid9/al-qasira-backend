@@ -14,12 +14,15 @@ from app.services.note_service import (
     delete_note,
 )
 from app.core.auth_middleware import admin_required
+from typing import Optional
 
-router = APIRouter()
-
+router = APIRouter(
+    prefix="/notes", tags=["Notes"],
+    dependencies=[Depends(admin_required)],
+)
 
 @router.post(
-    "/notes",
+    "",
     response_model=NoteResponse,
     status_code=201,
     dependencies=[Depends(admin_required)],
@@ -33,7 +36,7 @@ def add_note(
 
 
 @router.get(
-    "/notes",
+    "",
     response_model=list[NoteResponse],
 )
 def fetch_notes():
@@ -41,23 +44,26 @@ def fetch_notes():
 
 
 @router.put(
-    "/notes/{uid}",
+    "/{uid}",
     response_model=NoteResponse,
     dependencies=[Depends(admin_required)],
 )
 def edit_note(
     uid: str,
-    updates: NoteUpdate = Form(...),
+    name: Optional[str] = Form(None),
     image: UploadFile | None = File(None),
 ):
+    updates = NoteUpdate(name=name)
     note = update_note(uid, updates, image)
+
     if not note:
         raise HTTPException(404, "Note not found.")
+
     return note
 
 
 @router.delete(
-    "/notes/{uid}",
+    "/{uid}",
     status_code=204,
     dependencies=[Depends(admin_required)],
 )

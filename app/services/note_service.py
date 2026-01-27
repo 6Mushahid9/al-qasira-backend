@@ -41,20 +41,22 @@ def update_note(uid: str, updates: NoteUpdate, image: UploadFile | None):
 
     data = doc.to_dict() or {}
 
+    # Handle image update
     if image:
         if data.get("image"):
             delete_image(data["image"])
         data["image"] = upload_image(image, uid)
 
+    # Handle partial field updates
     update_data = {
-        k: v for k, v in updates.dict().items()
-        if v is not None
+        k: v for k, v in updates.dict(exclude_none=True).items()
     }
 
     data.update(update_data)
     doc_ref.set(data)
 
     return data
+
 
 
 def delete_note(uid: str):

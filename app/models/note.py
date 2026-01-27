@@ -13,7 +13,6 @@ class NoteCreate(NoteBase):
 
 class NoteUpdate(BaseModel):
     name: Optional[str] = None
-    image: Optional[str] = None
 
 
 class NoteResponse(NoteBase):

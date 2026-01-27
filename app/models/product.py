@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 from app.models.product_volume import ProductVolume
 from app.models.product_notes import ProductNotes
+from pydantic import Field
 
 
 class ProductBase(BaseModel):
@@ -28,15 +29,18 @@ class ProductCreate(BaseModel):
 
 
 class ProductUpdate(BaseModel):
-    image: Optional[str] = None
-    name: Optional[str] = None
-    description: Optional[str] = None
+    name: Optional[str] = Field(None, min_length=1)
+    description: Optional[str] = Field(None, min_length=1)
+
     tags: Optional[List[str]] = None
     category: Optional[str] = None
     featured: Optional[bool] = None
 
     volumes: Optional[List[ProductVolume]] = None
     notes: Optional[ProductNotes] = None
+
+    class Config:
+        extra = "forbid"   # ⬅️ prevents silent garbage fields
 
 
 class ProductResponse(ProductBase):

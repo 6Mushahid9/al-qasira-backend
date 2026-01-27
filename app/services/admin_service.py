@@ -23,34 +23,26 @@ def create_product(product: ProductCreate, image: UploadFile):
     return data
 
 
-def update_product(
-    uid: str,
-    updates: ProductUpdate,
-    image: UploadFile | None
-):
+def update_product(uid: str, updates: ProductUpdate, image: UploadFile | None):
     doc_ref = db.collection(COLLECTION).document(uid)
     doc = doc_ref.get()
 
     if not doc.exists:
         return None
 
-    data = doc.to_dict() or {}
+    update_payload = updates.dict(exclude_none=True)
 
-    # 🔹 Image update
     if image:
-        if data.get("image"):
-            delete_image(data["image"])
-        data["image"] = upload_image(image, uid)
+        old_image = (doc.to_dict() or {}).get("image")
+        new_image = upload_image(image, uid)
+        if old_image:
+            delete_image(old_image)
+        update_payload["image"] = new_image
 
-    # 🔹 Other updates
-    update_data = {
-        k: v for k, v in updates.dict().items()
-        if v is not None
-    }
+    if update_payload:
+        doc_ref.update(update_payload)
 
-    data.update(update_data)
-    doc_ref.set(data)
-    return data
+    return doc_ref.get().to_dict()
 
 
 def delete_product(uid: str) -> bool:

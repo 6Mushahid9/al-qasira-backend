@@ -10,6 +10,7 @@ from fastapi import (
 )
 from typing import Optional
 import json
+from pydantic import ValidationError
 
 from app.models.product import (
     ProductCreate,
@@ -26,7 +27,7 @@ from app.services.admin_service import (
 from app.core.auth_middleware import admin_required
 
 router = APIRouter(
-    prefix="/admin",
+    prefix="/admin", tags=["Admin"],
     dependencies=[Depends(admin_required)],
 )
 
@@ -61,31 +62,24 @@ def add_product(
         )
 
 
-@router.put("/{uid}", response_model=ProductResponse)
+@router.patch("/{uid}", response_model=ProductResponse)
 def edit_product(
     uid: str,
-    updates: str = Form(...),     # JSON string
-    image: Optional[UploadFile] = File(None),
+    updates: str = Form(...),
+    image: UploadFile | None = File(None),
 ):
     try:
         update_data = ProductUpdate(**json.loads(updates))
     except json.JSONDecodeError:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid JSON in update payload.",
-        )
+        raise HTTPException(400, "Invalid JSON in update payload.")
+    except ValidationError as e:
+        raise HTTPException(422, detail=e.errors())
 
     product = update_product(uid, update_data, image)
     if not product:
-        raise HTTPException(status_code=404, detail="Product not found.")
+        raise HTTPException(404, "Product not found.")
 
     return product
-
-
-@router.delete("/{uid}", status_code=204)
-def remove_product(uid: str):
-    if not delete_product(uid):
-        raise HTTPException(status_code=404, detail="Product not found.")
 
 
 @router.delete("/bulk")
@@ -101,3 +95,12 @@ def bulk_delete(payload: BulkDeleteRequest):
         "message": "Bulk delete completed.",
         **result,
     }
+
+
+
+@router.delete("/{uid}", status_code=204)
+def remove_product(uid: str):
+    if not delete_product(uid):
+        raise HTTPException(status_code=404, detail="Product not found.")
+
+

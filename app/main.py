@@ -39,9 +39,9 @@ def on_startup():
 
 # Routers
 app.include_router(admin_auth_router)
-app.include_router(product_router, prefix="/api", tags=["Products"])
-app.include_router(admin_router, prefix="/api", tags=["Admin"])
-app.include_router(note_router, prefix="/api", tags=["Notes"])
+app.include_router(product_router)
+app.include_router(admin_router)
+app.include_router(note_router)
 # app.include_router(dev_router)
 
 # Root route
