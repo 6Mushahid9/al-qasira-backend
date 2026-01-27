@@ -1,9 +1,9 @@
 npx kill-port 8000
 ## Pending Changes
 
-1. fix bulk delete route
-2. make pagination feature
-
+- fix bulk delete route of admin
+- fix note edit
+- fix how routes is made and imported
 
 # Backend for Al-Qasira 
 
