@@ -10,6 +10,7 @@ from app.models.note import NoteCreate, NoteUpdate, NoteResponse
 from app.services.note_service import (
     create_note,
     get_all_notes,
+    get_note_by_id,
     update_note,
     delete_note,
 )
@@ -25,7 +26,6 @@ router = APIRouter(
     "",
     response_model=NoteResponse,
     status_code=201,
-    dependencies=[Depends(admin_required)],
 )
 def add_note(
     name: str = Form(...),
@@ -42,11 +42,20 @@ def add_note(
 def fetch_notes():
     return get_all_notes()
 
+@router.get(
+    "/{uid}",
+    response_model=NoteResponse,
+)
+def fetch_note(uid: str):
+    note = get_note_by_id(uid)
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found.")
+    return note
+
 
 @router.put(
     "/{uid}",
     response_model=NoteResponse,
-    dependencies=[Depends(admin_required)],
 )
 def edit_note(
     uid: str,
@@ -65,7 +74,6 @@ def edit_note(
 @router.delete(
     "/{uid}",
     status_code=204,
-    dependencies=[Depends(admin_required)],
 )
 def remove_note(uid: str):
     if not delete_note(uid):

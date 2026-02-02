@@ -67,6 +67,7 @@ def get_featured_products():
         results.append({
             "uid": data["uid"],
             "image": data.get("image", ""),
+            "description": data.get("description", ""),
             "name": data.get("name", ""),
             "category": data.get("category", ""),
             "tags": data.get("tags", []),

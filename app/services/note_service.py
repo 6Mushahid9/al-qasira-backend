@@ -31,6 +31,10 @@ def get_all_notes():
         .stream()
     ]
 
+def get_note_by_id(uid: str):
+    doc = db.collection(COLLECTION).document(uid).get()
+    return doc.to_dict() if doc.exists else None
+
 
 def update_note(uid: str, updates: NoteUpdate, image: UploadFile | None):
     doc_ref = db.collection(COLLECTION).document(uid)

@@ -1,7 +1,10 @@
 # app/api/routes/product_routes.py
 
 from fastapi import APIRouter, HTTPException, Query
-from app.models.product import ProductResponse
+from app.models.product import (
+    ProductResponse,
+    ProductCardResponse,
+)
 from app.models.pagination import PaginatedResponse
 from app.services.product_service import (
     get_all_products,

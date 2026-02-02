@@ -46,6 +46,16 @@ class ProductUpdate(BaseModel):
 class ProductResponse(ProductBase):
     uid: str
 
+class ProductCardResponse(BaseModel):
+    uid: str
+    image: str
+    name: str
+    category: str
+    tags: List[str]
+    price_range: str
 
 class BulkDeleteRequest(BaseModel):
     uids: List[str]
+
+class FeaturedUpdate(BaseModel):
+    featured: bool

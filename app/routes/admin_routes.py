@@ -7,6 +7,7 @@ from fastapi import (
     File,
     Form,
     Depends,
+    Query,
 )
 from typing import Optional
 import json
@@ -17,12 +18,16 @@ from app.models.product import (
     ProductUpdate,
     ProductResponse,
     BulkDeleteRequest,
+    FeaturedUpdate,
 )
+from app.models.pagination import PaginatedResponse
 from app.services.admin_service import (
+    get_all_admin_products,
     create_product,
     update_product,
     delete_product,
     bulk_delete_products,
+    toggle_product_featured,
 )
 from app.core.auth_middleware import admin_required
 
@@ -30,6 +35,18 @@ router = APIRouter(
     prefix="/admin", tags=["Admin"],
     dependencies=[Depends(admin_required)],
 )
+
+@router.get("", response_model=PaginatedResponse[dict])
+def fetch_products(
+    page: int = Query(1, ge=1),
+    limit: int = Query(12, ge=1, le=50),
+    q: str | None = Query(None),
+):
+    return get_all_admin_products(
+        page=page,
+        limit=limit,
+        q=q,
+    )
 
 
 @router.post("", response_model=ProductResponse, status_code=201)
@@ -61,6 +78,16 @@ def add_product(
             detail="Invalid JSON in tags, volumes, or notes.",
         )
 
+@router.patch("/{uid}/toggle-featured", response_model=ProductResponse)
+def toggle_featured(uid: str):
+    print("Toggling featured for product:", uid)
+    product = toggle_product_featured(uid)
+
+    if not product:
+        raise HTTPException(404, "Product not found")
+
+    return product
+
 
 @router.patch("/{uid}", response_model=ProductResponse)
 def edit_product(
@@ -81,7 +108,6 @@ def edit_product(
 
     return product
 
-
 @router.delete("/bulk")
 def bulk_delete(payload: BulkDeleteRequest):
     if not payload.uids:
@@ -95,7 +121,6 @@ def bulk_delete(payload: BulkDeleteRequest):
         "message": "Bulk delete completed.",
         **result,
     }
-
 
 
 @router.delete("/{uid}", status_code=204)
